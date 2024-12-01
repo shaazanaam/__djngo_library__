@@ -26,6 +26,8 @@ urlpatterns = [
 # Use include() to add paths from the catalog application
 from django.urls import include
 
+# the text below ensures that whenever the URL pattern /catalog/ is encountered,
+# the URL pattern is passed on to the catalog application for further processing.
 urlpatterns += [path('catalog/', include('catalog.urls'))] 
 # This line includes the URLconf for the catalog application
 
@@ -39,3 +41,4 @@ urlpatterns += [path("", RedirectView.as_view(url="catalog/", permanent=True))]
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+ 
