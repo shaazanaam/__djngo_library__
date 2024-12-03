@@ -10,5 +10,9 @@ urlpatterns = [
     # that will be called if the URL matches(views.BookListView.as_view()), and a name 
     # that you can use to uniquely identify the URL (books).
     path('books/', views.BookListView.as_view(), name='books'),
+    path('book/<int:pk>', views.BookDetailView.as_view(), name='book-detail'),
+    #re_path(r'^book/(?P<pk>\d+)$', views.BookDetailView.as_view(), name='book-detail'),
+
 ]
+
 
