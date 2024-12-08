@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from .models import Book, Author, BookInstance, Genre
+from django.utils.translation import gettext_lazy as _
+# from django.urls import reverse
 
 
 # Create your views here.
@@ -63,10 +65,22 @@ class BookDetailView(generic.DetailView):
     ## the only catch is that it expects the URL parameter to be named pk
     ## if you use generic.DetailsView the url configuration must use the name pk because the generic view looks  for the exact names
 
+class AuthorListView(generic.ListView):
+    model = Author
+    # context_object_name = 'my_author_list'   # your own name for the list as a template variable
+    # queryset = Author.objects.filter(last_name__icontains='smith')[:5] # Get 5 authors containing the name smith
+    # template_name = 'catalog/author_list.html'  # Specify your own template name/location
 
+class AuthorDetailView(generic.DetailView):
+    model = Author
+    # template_name = 'catalog/author_detail.html'  # Specify your own template name/location
 
-from django.contrib.auth.mixins import LoginRequiredMixin  ## this is used to ensure that only logged in users can access the view
-                                                           ## which we are going to create for the loaned books by user
+## Challenge:Yourself 
+# Showing the particular User all the books that are currently on loan to them.
+## this is used to ensure that only logged in users can access the view
+## which we are going to create for the loaned books by user
+
+from django.contrib.auth.mixins import LoginRequiredMixin  
 class LoanedBooksByUserListView(LoginRequiredMixin,generic.ListView):
     """Generic class-based view listing books on loan to current user."""
     model = BookInstance
@@ -88,21 +102,16 @@ class AllLoanedBooksListView(PermissionRequiredMixin, generic.ListView):
     permission_required = 'catalog.can_mark_returned'
     paginate_by = 10
     
-    
 
+#Form handling for a stand alone forms and also the example is for 
+# processing the form on the forms.py
 
-
-
-#form handling
 import datetime
-
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
-from django.urls import reverse
-
+from django.urls import reverse, reverse_lazy
 from catalog.forms import RenewBookForm
-
 @login_required
 @permission_required('catalog.can_mark_returned', raise_exception=True)
 def renew_book_librarian(request, pk):
@@ -136,16 +145,93 @@ def renew_book_librarian(request, pk):
 
     return render(request, 'catalog/book_renew_librarian.html', context)
 
+
+## Form Handling using a Helper class ModelForm for Renew Book
 ## A basic Model form containing  the same field as the original RenewBookForm is shown
 ##You need to add class Meta with the associated (BookInstance)  and  list of model 
 ## fields that you want to include in the form.
-
+## In order to use this you need to  modify the renew_book_librarian view
+## to   take advantage of this helper class by replacing the 
+# 'renewal_date' with the 'due_back' field
 from django.forms import ModelForm
 from catalog.models import BookInstance
+from django.core.exceptions import ValidationError
 
 class RenewBookModelForm(ModelForm):
     class Meta:
         model = BookInstance
         fields = ['due_back']
-        labels = {'due_back': ('New renewal date')}
-        help_texts = {'due_back': ('Enter a date between now and 4 weeks (default 3).')}
+        labels = {'due_back': _('New renewal date')}
+        help_texts = {'due_back': _('Enter a date between now and 4 weeks (default 3).')}
+
+    def clean_due_back(self):
+        data = self.cleaned_data['due_back']
+
+        # Check if a date is not in the past.
+        if data < datetime.date.today():
+            raise ValidationError(_('Invalid date - renewal in past'))
+
+        # Check if a date is in the allowed range (+4 weeks from today).
+        if data > datetime.date.today() + datetime.timedelta(weeks=4):
+            raise ValidationError(_('Invalid date - renewal more than 4 weeks ahead'))
+
+        # Remember to always return the cleaned data.
+        return data
+    
+
+## Generic Editing Views 
+## These views are used to create, update and delete records
+
+
+#Generic Editing View for the Author model
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import Author
+
+class AuthorCreate(PermissionRequiredMixin, CreateView):
+    model = Author
+    fields = '__all__'
+    initial={'date_of_death':'05/01/2018',}
+    permission_required = 'catalog.add_author'
+class AuthorUpdate(PermissionRequiredMixin, UpdateView):
+    model = Author
+    fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death']
+    permission_required = 'catalog.change_author'
+class AuthorDelete(PermissionRequiredMixin, DeleteView):
+    model = Author
+    success_url = reverse_lazy('authors')
+    permission_required = 'catalog.delete_author'
+    
+    def form_valid(self, form):
+        try:
+            self.object.delete()
+            return HttpResponseRedirect(self.get_success_url())
+        except Exception as e:
+            return HttpResponseRedirect(
+                reverse("author-delete", kwargs={"pk": self.object.pk})
+            )
+
+
+## Generic Editing View for the Book model
+
+class BookCreate(PermissionRequiredMixin, CreateView):
+    model = Book
+    fields = '__all__'
+    permission_required = 'catalog.add_book'
+class BookUpdate(PermissionRequiredMixin, UpdateView):
+    model = Book
+    fields = '__all__'
+    permission_required = 'catalog.change_book'
+class BookDelete(PermissionRequiredMixin, DeleteView):
+    model = Book
+    success_url = reverse_lazy('books')
+    permission_required = 'catalog.delete_book'
+    
+    def form_valid(self, form):
+        try:
+            self.object.delete()
+            return HttpResponseRedirect(self.get_success_url())
+        except Exception as e:
+            return HttpResponseRedirect(
+                reverse("book-delete", kwargs={"pk": self.object.pk})
+            )

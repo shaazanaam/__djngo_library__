@@ -13,7 +13,6 @@ from datetime import date                        #  A module that allows the man
 # values can be managed in the data base
 # rather than being hard coded in the application code.
 
-
 class Genre(models.Model):
     """Model representing a book genre."""
 
@@ -49,7 +48,6 @@ class Genre(models.Model):
             ),
         ]
 
-
 ## this model below is used to store information about the book####
 ## The book model stores information about a book, such as its title, author, and summary.
 # But this does not include a particular physical instance of a book (which would be a BookInstance).
@@ -78,13 +76,22 @@ class Book(models.Model):
     # ManyToManyField used because genre can contain many books. Books can cover many genres.
     # Genre class has already been defined so we can specify the object above.
     # In both field types the related model class is declared as the first unnamed parameter using
-    # either the model class or a string containing the name of the related model. You must use the name of the model
-    #  as a string if the associated class has not yet been defined in this file before it is referenced!
-    # The other parameters of interest in the author field are null=True, which allows the database to store a
-    # Null value if no author is selected, and on_delete=models.RESTRICT, which will prevent the book's associated
+    # either the model class or a string containing the name of the related model.
+    # You must use the name of the model
+    # as a string if the associated class has not yet been defined in this file before it
+    # is referenced!
+    # The other parameters of interest in the author field are null=True, which allows the
+    # database to store a
+    # Null value if no author is selected, and on_delete=models.RESTRICT, which will prevent the 
+    # book's associated
     # author being deleted if it is referenced by any book.
 
     genre = models.ManyToManyField(Genre, help_text="Select a genre for this book")
+
+    language = models.ManyToManyField("Language", help_text="Select languages for this book")
+
+    # Using the Many to Many field to allow multiple languages to be associated with a book
+    # Also multiple languages can have multiple books
 
     def __str__(self):
         """String for representing the Model object."""
@@ -97,8 +104,12 @@ class Book(models.Model):
     def display_genre(self):
         """Create a string for the Genre. This is required to display genre in Admin."""
         return ", ".join([genre.name for genre in self.genre.all()[:3]])
+    def display_language(self):
+        """Create a string for the Language. This is required to display language in Admin."""
+        return ", ".join([language.name for language in self.language.all()[:3]])
 
     display_genre.short_description = "Genre"
+    display_language.short_description = "Language"
 
     ## this model below is used to store information about the book Instance
     ## The BookInstance model represents a specific copy of a
@@ -111,7 +122,6 @@ class Book(models.Model):
     #  The key specifies on_delete=models.RESTRICT to ensure that the Book
     # cannot be deleted while referenced by a BookInstance.
     # CharField to represent the imprint (specific release) of the book.
-
 
 import uuid  # Required for unique book instances
 
@@ -161,11 +171,7 @@ class BookInstance(models.Model):
         """Determines if the book is overdue based on due date and current date."""
         return bool(self.due_back and date.today() > self.due_back)
     
-    
-    
 ## this model below is used to store information about the author
-
-
 class Author(models.Model):
     """Model representing an author."""
 
@@ -184,7 +190,6 @@ class Author(models.Model):
     def __str__(self):
         """String for representing the Model object."""
         return f"{self.last_name}, {self.first_name}"
-
 
 ##This model below is for the Language model
 # The Language model is used to store information about the language in which the book is written.

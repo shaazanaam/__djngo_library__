@@ -34,7 +34,7 @@ class BooksInstanceInline(admin.TabularInline):
 
 ## BOOK ADMIN
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'display_genre')
+    list_display = ('title', 'author', 'display_genre', 'display_language')
     inlines = [BooksInstanceInline]
     
 # Register the BookAdmin class with the model
