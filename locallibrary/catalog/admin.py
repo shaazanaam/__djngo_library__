@@ -41,15 +41,18 @@ class BookAdmin(admin.ModelAdmin):
 admin.site.register(Book, BookAdmin)
 
 ## BOOK INSTANCE ADMIN
+## added the borrower field in thebook admin class
+# this will make the field visible in the Admin section allowing us to assign a User to a 
+# Book instance when needed
 class BookInstanceAdmin(admin.ModelAdmin):
-    list_display = ( 'status', 'due_back', 'id')
+    list_display = ( 'book','status','borrower', 'due_back', 'id')
     list_filter = ('status', 'due_back')
     fieldsets=(
         (None, {
             'fields': ('book', 'imprint', 'id')
         }),
         ('Availability', {
-            'fields': ('status', 'due_back')
+            'fields': ('status', 'due_back','borrower')
         }),
     )
 # Register the BookInstanceAdmin class with the model

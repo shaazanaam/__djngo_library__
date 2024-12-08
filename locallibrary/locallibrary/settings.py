@@ -9,6 +9,10 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
+# To make the template library visible to the template loader we need to add the template library
+# in the template search path.
+
 import os # needed by the code below
 from pathlib import Path
 
@@ -52,6 +56,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "locallibrary.urls"
+
+# By updating the DIR to os.path.join(BASE_DIR, "templates") we are telling Django
+#  to look for templates in the /locallibrary/templates directory.
 
 TEMPLATES = [
     {
@@ -127,5 +134,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #Redirect to home URL after login (Default redirects to the /accounts/profile/ URL)
 LOGIN_REDIRECT_URL = '/'
 
+
+
+# sends the email password reset link to the console instead of sending it to the user's email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
