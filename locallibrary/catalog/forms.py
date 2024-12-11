@@ -8,11 +8,16 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+# remember  from the testing perspective 
+# this form has one field which will have a label and the help text which 
+# we will need to verify
 class RenewBookForm(forms.Form):
     renewal_date = forms.DateField(help_text="Enter a date between now and 4 weeks (default 3).")
 
     def clean_renewal_date(self):
-        ## this is the step that gets the  data  converted  to a python data object datatime.datetime object by
+        ## this is the step that gets the  data already converted 
+        # to a python data object datatime.
+        # datetime object by
         ## the Django form system called the DateField widget
         ## the cleaned data is stored in the cleaned_data dictionary
         ## then we call the value of the dictionary as below
