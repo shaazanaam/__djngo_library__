@@ -41,10 +41,10 @@ from django.views import generic
 #located at /locallibrary/catalog/templates/catalog/book_list.html.
 #Within the template, the object_list  or the book_list variable will contain the list of books to display.
 #Or more generically <model_name>_list.
-# The generic views look for tempaltes in /application_name/model_name_list.html
-#in this case, /locallibrary/catalog/book_list.html).
-#inside the applciaiton's (/application_name/templates/) directory.
-#/catalog/templates/catalog/book_list.html
+# The generic views look for templates in /application_name/<model_name>_list.html
+# in this case, /locallibrary/catalog/book_list.html).
+# inside the applciaiton's (/application_name/templates/) directory.
+# /catalog/templates/catalog/book_list.html
 class BookListView(generic.ListView):
     model = Book
     # context_object_name = 'book_list' # your own name for the list as a template variable
@@ -67,9 +67,13 @@ class BookDetailView(generic.DetailView):
 
 class AuthorListView(generic.ListView):
     model = Author
+    paginate_by = 10
     # context_object_name = 'my_author_list'   # your own name for the list as a template variable
     # queryset = Author.objects.filter(last_name__icontains='smith')[:5] # Get 5 authors containing the name smith
     # template_name = 'catalog/author_list.html'  # Specify your own template name/location
+    # in order to test this the only thing you need to check is that
+    # the author_list.html template is in the correct location and that it can be accessed
+    # using its name in the URL
 
 class AuthorDetailView(generic.DetailView):
     model = Author
@@ -181,9 +185,12 @@ class RenewBookModelForm(ModelForm):
 
 ## Generic Editing Views 
 ## These views are used to create, update and delete records
+#They have been created using the Django's generic editing views which
+# is a class-based view that simplifies the creation of forms.
+#The views are used to create, update and delete records.
 
 
-#Generic Editing View for the Author model
+#Generic Editing View for the Author model and then below is the Generic Editing View for the Book model
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Author

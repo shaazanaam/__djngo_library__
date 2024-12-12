@@ -12,6 +12,11 @@ from datetime import date                        #  A module that allows the man
 ## rathern than as free text or a selection list so that the possible
 # values can be managed in the data base
 # rather than being hard coded in the application code.
+# Remember that in the relationship of FOreignKey the Model  that contains the 
+# ForeignKey is the parent model and the model that is being referenced is the child model
+# The ForeignKey field is used to define the many-to-one relationship between the Genre and Book models.
+# The  model that contains the foreign Key field is on the many side of the relationship
+# while the model referenced by the ForeignKey is on the one side of the relationship
 
 class Genre(models.Model):
     """Model representing a book genre."""
@@ -72,7 +77,6 @@ class Book(models.Model):
         default="0000000000000",
         help_text='13 Character <a href="https://www.isbn-international.org/content/what-isbn">ISBN number</a>',
     )
-
     # ManyToManyField used because genre can contain many books. Books can cover many genres.
     # Genre class has already been defined so we can specify the object above.
     # In both field types the related model class is declared as the first unnamed parameter using
@@ -87,7 +91,6 @@ class Book(models.Model):
     # author being deleted if it is referenced by any book.
 
     genre = models.ManyToManyField(Genre, help_text="Select a genre for this book")
-
     language = models.ManyToManyField("Language", help_text="Select languages for this book")
 
     # Using the Many to Many field to allow multiple languages to be associated with a book
@@ -96,11 +99,9 @@ class Book(models.Model):
     def __str__(self):
         """String for representing the Model object."""
         return self.title
-
     def get_absolute_url(self):
         """Returns the url to access a detail record for this book."""
         return reverse("book-detail", args=[str(self.id)])
-
     def display_genre(self):
         """Create a string for the Genre. This is required to display genre in Admin."""
         return ", ".join([genre.name for genre in self.genre.all()[:3]])
@@ -123,8 +124,8 @@ class Book(models.Model):
     # cannot be deleted while referenced by a BookInstance.
     # CharField to represent the imprint (specific release) of the book.
 
+#Below is the Book Instance Model
 import uuid  # Required for unique book instances
-
 
 class BookInstance(models.Model):
     """Model representing a specific copy of a book (i.e. that can be borrowed from the library)."""
@@ -152,7 +153,7 @@ class BookInstance(models.Model):
         default="m",
         help_text="Book availability",
     )
-
+    ## borrower can have many book instances but a book instance can only have one borrower
     borrower = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL,
